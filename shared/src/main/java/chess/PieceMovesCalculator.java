@@ -1,14 +1,18 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class PieceMovesCalculator {
 
     public static Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-
-        return List.of();
+        int[][] offsets = {
+                {-1, -1}, {-1, 0}, {-1, 1},
+                {0, -1}, {0, 1},
+                {1, -1}, {1, 0}, {1, 1}
+        };
+        return MovesHelper.jumpMoves(board, myPosition, offsets);
     }
 
     public static Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
@@ -24,9 +28,13 @@ public class PieceMovesCalculator {
     }
 
     public static Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-
-        return List.of();
+        int[][] offsets = {
+                {-1, 2}, {1, 2},
+                {-2, 1}, {2, 1},
+                {-1, -2}, {1, -2},
+                {-2, -1}, {2, -1},
+        };
+        return MovesHelper.jumpMoves(board, myPosition, offsets);
     }
 
     public static Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
