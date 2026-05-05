@@ -10,7 +10,37 @@ import java.util.Collection;
 public class MovesHelper {
     public void calculateDiagonals(ChessBoard board, ChessPosition myPosition) {}
 
-    public void calculateSides(ChessBoard board, ChessPosition myPosition) {}
+    public Collection<ChessMove> calculateSides(ChessBoard board, ChessPosition myPosition) {
+        Collection<ChessMove> moves = new ArrayList<>();
+        ChessPiece piece = board.getPiece(myPosition);
+
+        int[][] directions = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1}
+        };
+
+        for (int[] direction : directions) {
+            int step = 1;
+            int newRow = myPosition.getRow() + (direction[0] * step);
+            int newCol = myPosition.getColumn() + (direction[1] * step);
+            while (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                ChessPiece pieceAtCandidate = board.getPiece(new ChessPosition(newRow, newCol));
+                if (pieceAtCandidate == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+                } else {
+                    if (pieceAtCandidate.getTeamColor() != piece.getTeamColor()) {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(newRow, newCol), null));
+                        break;
+                    } else if (pieceAtCandidate.getTeamColor() == piece.getTeamColor()) {
+                        break;
+                    }
+                }
+                step++;
+                newRow = myPosition.getRow() + (direction[0] * step);
+                newCol = myPosition.getColumn() + (direction[1] * step);
+            }
+        }
+        return moves;
+    }
 
     public static Collection<ChessMove> jumpMoves(ChessBoard board, ChessPosition myPosition, int[][] offsets) {
         Collection<ChessMove> moves = new ArrayList<>();
