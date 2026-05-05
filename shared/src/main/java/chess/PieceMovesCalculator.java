@@ -16,9 +16,10 @@ public class PieceMovesCalculator {
     }
 
     public static Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-
-        return List.of();
+        Collection<ChessMove> moves = new ArrayList<>();
+        moves.addAll(MovesHelper.calculateDiagonals(board, myPosition));
+        moves.addAll(MovesHelper.calculateSides(board, myPosition));
+        return moves;
     }
 
     public static Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
