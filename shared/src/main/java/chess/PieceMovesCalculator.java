@@ -41,8 +41,6 @@ public class PieceMovesCalculator {
     }
 
     public static Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-
-        return List.of();
+        return MovesHelper.calculatePawnMoves(board, myPosition);
     }
 }
