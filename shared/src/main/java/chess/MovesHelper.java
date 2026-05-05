@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * This class has slides mainly for the Queen, Rook, and Bishop,
- * but also the checks for King and Knight.
+ * This class abstracts away the duplicate code for jumps and slides.
  */
 public class MovesHelper {
+    /**
+     * Abstracts away the duplicate code used in diagonal, horizontal, and vertical slides.
+     */
     public static Collection<ChessMove> sliderHelper(ChessBoard board, ChessPosition myPosition, int[][] directions) {
         Collection<ChessMove> moves = new ArrayList<>();
         ChessPiece piece = board.getPiece(myPosition);
@@ -35,6 +37,9 @@ public class MovesHelper {
         return moves;
     }
 
+    /**
+     * Gives directions for sliderHelper and returns the moves.
+     */
     public static Collection<ChessMove> calculateDiagonals(ChessBoard board, ChessPosition myPosition) {
         int[][] directions = {
                 {1, 1}, {-1, 1}, {-1, -1}, {1, -1}
@@ -43,6 +48,9 @@ public class MovesHelper {
         return sliderHelper(board, myPosition, directions);
     }
 
+    /**
+     * Gives directions for sliderHelper and returns the moves.
+     */
     public static Collection<ChessMove> calculateSides(ChessBoard board, ChessPosition myPosition) {
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}
@@ -51,6 +59,9 @@ public class MovesHelper {
         return sliderHelper(board, myPosition, directions);
     }
 
+    /**
+     * Takes offsets and returns the moves for more specific movements. (King, Knight)
+     */
     public static Collection<ChessMove> jumpMoves(ChessBoard board, ChessPosition myPosition, int[][] offsets) {
         Collection<ChessMove> moves = new ArrayList<>();
         ChessPiece piece = board.getPiece(myPosition);
