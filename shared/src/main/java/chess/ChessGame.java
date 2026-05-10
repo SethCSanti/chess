@@ -43,6 +43,17 @@ public class ChessGame {
         BLACK
     }
 
+    private ChessBoard copyBoard(ChessBoard original) {
+        ChessBoard copy = new ChessBoard();
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                copy.addPiece(pos, original.getPiece(pos));
+            }
+        }
+        return copy;
+    }
+
     /**
      * Gets all valid moves for a piece at the given location
      *
