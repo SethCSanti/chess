@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -54,6 +55,33 @@ public class ChessGame {
         return copy;
     }
 
+    private boolean isInCheck(TeamColor teamColor, ChessBoard boardToCheck) {
+        ChessPosition kingPosition = null;
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = boardToCheck.getPiece(new ChessPosition(row, col));
+                if (piece != null && piece.getTeamColor() == teamColor
+                        && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingPosition = new ChessPosition(row, col);
+                }
+            }
+        }
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = boardToCheck.getPiece(pos);
+                if (piece != null && piece.getTeamColor() != teamColor) {
+                    for (ChessMove move : piece.pieceMoves(boardToCheck, pos)) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets all valid moves for a piece at the given location
      *
@@ -62,7 +90,25 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+        Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        for (ChessMove move : moves) {
+            ChessBoard boardCopy = copyBoard(board);
+            ChessPiece pieceToPlace = piece;
+            if (move.getPromotionPiece() != null) {
+                pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            }
+            boardCopy.addPiece(move.getEndPosition(), pieceToPlace);
+            boardCopy.addPiece(move.getStartPosition(), null);
+            if (!isInCheck(piece.getTeamColor(), boardCopy)) {
+                validMoves.add(move);
+            }
+        }
+        return validMoves;
     }
 
     /**
@@ -82,33 +128,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        // First loop - find the king's position
-        ChessPosition kingPosition = null;
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
-                if (piece != null && piece.getTeamColor() == teamColor
-                        && piece.getPieceType() == ChessPiece.PieceType.KING) {
-                    kingPosition = new ChessPosition(row, col);
-                }
-            }
-        }
-
-        // Second loop - check if any enemy piece can reach the king
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition pos = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(pos);
-                if (piece != null && piece.getTeamColor() != teamColor) {
-                    for (ChessMove move : piece.pieceMoves(board, pos)) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return isInCheck(teamColor, this.board);
     }
 
     /**
