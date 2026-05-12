@@ -13,6 +13,7 @@ import java.util.Objects;
 public class ChessGame {
     ChessBoard board;
     TeamColor teamTurn;
+    ChessPosition enPassantTarget;
 
     public ChessGame() {
         board = new ChessBoard();
@@ -94,8 +95,19 @@ public class ChessGame {
         if (piece == null) {
             return null;
         }
-        Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> moves = new ArrayList<>(piece.pieceMoves(board, startPosition));
         Collection<ChessMove> validMoves = new ArrayList<>();
+        // enPassant
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && enPassantTarget != null) {
+            int direction = (piece.getTeamColor() == TeamColor.WHITE) ? 1 : -1;
+            if (enPassantTarget.getRow() == startPosition.getRow() &&
+                    Math.abs(enPassantTarget.getColumn() - startPosition.getColumn()) == 1) {
+                ChessMove enPassantMove = new ChessMove(startPosition,
+                        new ChessPosition(startPosition.getRow() + direction, enPassantTarget.getColumn()), null);
+                moves.add(enPassantMove);
+            }
+        }
+
         for (ChessMove move : moves) {
             ChessBoard boardCopy = copyBoard(board);
             ChessPiece pieceToPlace = piece;
@@ -133,8 +145,23 @@ public class ChessGame {
         if (move.getPromotionPiece() != null) {
             pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
         }
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN &&
+                move.getStartPosition().getColumn() != move.getEndPosition().getColumn() &&
+                board.getPiece(move.getEndPosition()) == null) {
+            board.addPiece(enPassantTarget, null);
+        }
         board.addPiece(move.getEndPosition(), pieceToPlace);
         board.addPiece(move.getStartPosition(), null);
+
+        // enPassant
+        enPassantTarget = null;
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            int rowDiff = move.getEndPosition().getRow() - move.getStartPosition().getRow();
+            if (Math.abs(rowDiff) == 2) {
+                enPassantTarget = move.getEndPosition();
+            }
+        }
+
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
