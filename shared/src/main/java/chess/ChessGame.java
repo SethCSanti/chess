@@ -51,6 +51,12 @@ public class ChessGame {
         BLACK
     }
 
+    /**
+     * Makes a deep copy for the methods below to use
+     *
+     * @param original the original board
+     * @return a copied board
+     */
     private ChessBoard copyBoard(ChessBoard original) {
         ChessBoard copy = new ChessBoard();
         for (int row = 1; row <= 8; row++) {
@@ -62,7 +68,15 @@ public class ChessGame {
         return copy;
     }
 
+    /**
+     * Checks to see if the King is in check or not
+     *
+     * @param teamColor the color of the King
+     * @param boardToCheck a copy of the original board to work on
+     * @return if the King is in check or not (T/F)
+     */
     private boolean isInCheck(TeamColor teamColor, ChessBoard boardToCheck) {
+        // look for King position
         ChessPosition kingPosition = null;
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
@@ -73,6 +87,7 @@ public class ChessGame {
                 }
             }
         }
+        // looks for other pieces
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
@@ -89,12 +104,19 @@ public class ChessGame {
         return false;
     }
 
+    /**
+     * Adds castling moves for a king if conditions are met.
+     *
+     * @param piece the piece being moved
+     * @param startPosition the position of the piece
+     * @param moves the collection to add castling moves to
+     */
     private void addCastlingMoves(ChessPiece piece, ChessPosition startPosition, Collection<ChessMove> moves) {
         if (piece.getPieceType() != ChessPiece.PieceType.KING) { return; }
         int kingStartCol = 5;
         int kingStartRow = (piece.getTeamColor() == TeamColor.WHITE) ? 1 : 8;
         if (startPosition.getRow() != kingStartRow || startPosition.getColumn() != kingStartCol) {
-            return; // king not on starting square, no castling
+            return;
         }
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             boolean kingMoved = (piece.getTeamColor() == TeamColor.WHITE) ? whiteKingMoved : blackKingMoved;
@@ -142,7 +164,14 @@ public class ChessGame {
         }
     }
 
+    /**
+     * Updates king and rook moved flags after a move is made.
+     *
+     * @param piece the piece that was moved
+     * @param move the move that was made
+     */
     private void updateCastlingFlags(ChessPiece piece, ChessMove move) {
+        // king checks
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             if (piece.getTeamColor() == TeamColor.WHITE) {
                 whiteKingMoved = true;
@@ -150,6 +179,7 @@ public class ChessGame {
                 blackKingMoved = true;
             }
         }
+        // rook checks
         if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {
             if (move.getStartPosition().equals(new ChessPosition(1, 1))) {
                 whiteRookQueensideMoved = true;
@@ -163,6 +193,12 @@ public class ChessGame {
         }
     }
 
+    /**
+     * Moves the rook to its castled position when the king castles.
+     *
+     * @param piece the piece that was moved
+     * @param move the move that was made
+     */
     private void handleCastlingRookMove(ChessPiece piece, ChessMove move) {
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             int colDiff = move.getEndPosition().getColumn() - move.getStartPosition().getColumn();
@@ -203,9 +239,7 @@ public class ChessGame {
                 moves.add(enPassantMove);
             }
         }
-
         addCastlingMoves(piece, startPosition, moves);
-
         for (ChessMove move : moves) {
             ChessBoard boardCopy = copyBoard(board);
             ChessPiece pieceToPlace = piece;
@@ -214,6 +248,7 @@ public class ChessGame {
             }
             boardCopy.addPiece(move.getEndPosition(), pieceToPlace);
             boardCopy.addPiece(move.getStartPosition(), null);
+            // castling
             if (piece.getPieceType() == ChessPiece.PieceType.KING) {
                 int colDiff = move.getEndPosition().getColumn() - move.getStartPosition().getColumn();
                 int row = move.getStartPosition().getRow();
@@ -239,6 +274,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        // main checks
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if  (piece == null) {
             throw new InvalidMoveException();
@@ -254,6 +290,7 @@ public class ChessGame {
         if (move.getPromotionPiece() != null) {
             pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
         }
+        // enPassant
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN &&
                 move.getStartPosition().getColumn() != move.getEndPosition().getColumn() &&
                 board.getPiece(move.getEndPosition()) == null) {
@@ -261,8 +298,6 @@ public class ChessGame {
         }
         board.addPiece(move.getEndPosition(), pieceToPlace);
         board.addPiece(move.getStartPosition(), null);
-
-        // enPassant
         enPassantTarget = null;
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
             int rowDiff = move.getEndPosition().getRow() - move.getStartPosition().getRow();
@@ -270,10 +305,8 @@ public class ChessGame {
                 enPassantTarget = move.getEndPosition();
             }
         }
-
         updateCastlingFlags(piece, move);
         handleCastlingRookMove(piece, move);
-
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
@@ -287,6 +320,9 @@ public class ChessGame {
         return isInCheck(teamColor, this.board);
     }
 
+    /**
+     * Helper function for checking Checkmate and Stalemate
+     */
     private boolean mateHelper(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {

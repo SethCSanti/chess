@@ -7,8 +7,13 @@ import java.util.Collection;
  * This class abstracts away the duplicate code for jumps and slides.
  */
 public class MovesHelper {
+
     /**
      * Abstracts away the duplicate code used in diagonal, horizontal, and vertical slides.
+     *
+     * @param board the current chess board
+     * @param myPosition position of the current piece
+     * @param directions horizontal, vertical, or diagonal set of directions
      */
     public static Collection<ChessMove> sliderHelper(ChessBoard board, ChessPosition myPosition, int[][] directions) {
         Collection<ChessMove> moves = new ArrayList<>();
@@ -38,7 +43,10 @@ public class MovesHelper {
     }
 
     /**
-     * Gives directions for sliderHelper and returns the moves.
+     * Gives directions for sliderHelper and returns the moves (diagonals only).
+     *
+     * @param board the current chess board
+     * @param myPosition the piece's current position
      */
     public static Collection<ChessMove> calculateDiagonals(ChessBoard board, ChessPosition myPosition) {
         int[][] directions = {
@@ -49,7 +57,10 @@ public class MovesHelper {
     }
 
     /**
-     * Gives directions for sliderHelper and returns the moves.
+     * Gives directions for sliderHelper and returns the moves (horizontal/vertical only).
+     *
+     * @param board the current chess board
+     * @param myPosition the piece's current position
      */
     public static Collection<ChessMove> calculateSides(ChessBoard board, ChessPosition myPosition) {
         int[][] directions = {
@@ -60,7 +71,11 @@ public class MovesHelper {
     }
 
     /**
-     * Takes offsets and returns the moves for more specific movements. (King, Knight)
+     * Takes offsets and returns the moves for more specific movements (knight and king only)
+     *
+     * @param board the current chess board
+     * @param myPosition the piece's current position
+     * @param offsets set of positions where the current piece could move
      */
     public static Collection<ChessMove> jumpMoves(ChessBoard board, ChessPosition myPosition, int[][] offsets) {
         Collection<ChessMove> moves = new ArrayList<>();
@@ -84,6 +99,12 @@ public class MovesHelper {
         return moves;
     }
 
+    /**
+     * Calculates the specifics of pawn moving (One forward, two forward at beginning, diagonal capture, promotion)
+     *
+     * @param board the current chess board
+     * @param myPosition the piece's current position
+     */
     public static Collection<ChessMove> calculatePawnMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>();
         ChessPiece piece = board.getPiece(myPosition);
