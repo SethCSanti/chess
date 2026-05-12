@@ -131,6 +131,21 @@ public class ChessGame {
         return isInCheck(teamColor, this.board);
     }
 
+    private boolean mateHelper(TeamColor teamColor) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if  (piece != null && piece.getTeamColor() == teamColor) {
+                    if (!validMoves(pos).isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Determines if the given team is in checkmate
      *
@@ -138,8 +153,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        ChessPosition pos = new ChessPosition(row, col);
-        return (isInCheck(teamColor) && validMoves(pos) = empty);
+        if (!isInCheck(teamColor)) { return false; }
+        return mateHelper(teamColor);
     }
 
     /**
@@ -150,7 +165,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return validMoves() = empty;
+        if (isInCheck(teamColor)) { return false; }
+        return mateHelper(teamColor);
     }
 
     /**
