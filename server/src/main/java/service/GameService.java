@@ -20,7 +20,8 @@ public class GameService {
     }
 
     /** Creates a new chess game and returns the generated game ID. */
-    public CreateGameResult createGame(String authToken, CreateGameRequest request) throws BadRequestException, DataAccessException, UnauthorizedException {
+    public CreateGameResult createGame(String authToken, CreateGameRequest request)
+            throws BadRequestException, DataAccessException, UnauthorizedException {
         AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new UnauthorizedException("User does not exist");
@@ -44,7 +45,8 @@ public class GameService {
     }
 
     /** Joins an existing chess game as the specified color. */
-    public void joinGame(String authToken, JoinGameRequest request) throws BadRequestException, DataAccessException, UnauthorizedException, AlreadyTakenException {
+    public void joinGame(String authToken, JoinGameRequest request)
+            throws BadRequestException, DataAccessException, UnauthorizedException, AlreadyTakenException {
         AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new UnauthorizedException("Unauthorized");
@@ -61,7 +63,8 @@ public class GameService {
     }
 
     @NotNull
-    private static GameData getGameData(JoinGameRequest request, GameData game, AuthData auth) throws BadRequestException, AlreadyTakenException {
+    private static GameData getGameData(JoinGameRequest request, GameData game, AuthData auth)
+            throws BadRequestException, AlreadyTakenException {
         if (game == null) {
             throw new BadRequestException("Game not found");
         }
