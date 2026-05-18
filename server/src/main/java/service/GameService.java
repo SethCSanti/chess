@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import model.*;
 import dataaccess.*;
 import model.GameData;
+import org.jetbrains.annotations.NotNull;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import result.CreateGameResult;
@@ -55,6 +56,12 @@ public class GameService {
             throw new BadRequestException("Game ID is required");
         }
         GameData game = dataAccess.getGame(request.gameID());
+        GameData updatedGame = getGameData(request, game, auth);
+        dataAccess.updateGame(updatedGame);
+    }
+
+    @NotNull
+    private static GameData getGameData(JoinGameRequest request, GameData game, AuthData auth) throws BadRequestException, AlreadyTakenException {
         if (game == null) {
             throw new BadRequestException("Game not found");
         }
@@ -71,6 +78,6 @@ public class GameService {
         } else {
             updatedGame = new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game());
         }
-        dataAccess.updateGame(updatedGame);
+        return updatedGame;
     }
 }
