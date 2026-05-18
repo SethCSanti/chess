@@ -29,6 +29,23 @@ public class Server {
         javalin.post("/game", createGameHandler::handle);
         javalin.put("/game", joinGameHandler::handle);
 
+        javalin.exception(dataaccess.UnauthorizedException.class, (ex, ctx) -> {
+            ctx.status(401);
+            ctx.result(JsonUtils.toJson(new Response("Error: " + ex.getMessage())));
+        });
+        javalin.exception(dataaccess.BadRequestException.class, (ex, ctx) -> {
+            ctx.status(400);
+            ctx.result(JsonUtils.toJson(new Response("Error: " + ex.getMessage())));
+        });
+        javalin.exception(dataaccess.AlreadyTakenException.class, (ex, ctx) -> {
+            ctx.status(403);
+            ctx.result(JsonUtils.toJson(new Response("Error: " + ex.getMessage())));
+        });
+        javalin.exception(dataaccess.DataAccessException.class, (ex, ctx) -> {
+            ctx.status(500);
+            ctx.result(JsonUtils.toJson(new Response("Error: " + ex.getMessage())));
+        });
+
     }
 
     public int run(int desiredPort) {
