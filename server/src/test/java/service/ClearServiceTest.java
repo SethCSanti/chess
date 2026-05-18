@@ -1,6 +1,5 @@
 package service;
 
-import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ public class ClearServiceTest {
     }
 
     @Test
-    public void clearSuccess() throws DataAccessException {
+    public void clearSuccess() {
         assertDoesNotThrow(() -> clearService.clear());
     }
 }
