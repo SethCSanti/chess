@@ -10,4 +10,12 @@ public class RegisterResult extends Response {
         this.authToken = authToken;
     }
     public RegisterResult(String message) { super(message); }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
 }

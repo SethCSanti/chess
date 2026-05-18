@@ -10,4 +10,12 @@ public class LoginResult extends Response {
         this.authToken = authToken;
     }
     public LoginResult(String message) { super(message); }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
 }

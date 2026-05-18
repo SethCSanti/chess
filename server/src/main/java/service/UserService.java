@@ -4,8 +4,13 @@ import dataaccess.DataAccess;
 import model.*;
 import dataaccess.*;
 import model.UserData;
+import request.LoginRequest;
+import request.LogoutRequest;
+import request.RegisterRequest;
+import result.LoginResult;
+import result.RegisterResult;
 
-import java.util.Collection;
+import java.util.UUID;
 
 public class UserService {
 
@@ -13,5 +18,48 @@ public class UserService {
 
     public UserService(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
+    }
+
+    /** Registers a new user, creates an auth token, and returns the result. */
+    public RegisterResult registerUser(RegisterRequest request) throws BadRequestException, AlreadyTakenException, DataAccessException {
+        if (request.username() == null || request.password() == null || request.email() == null) {
+            throw new BadRequestException("Make sure to input a username, password, and email");
+        } else if (dataAccess.getUser(request.username())  != null) {
+            throw new AlreadyTakenException("Username is already taken");
+        } else {
+            dataAccess.createUser(new UserData(request.username(), request.password(), request.email()));
+            String authToken = UUID.randomUUID().toString();
+            dataAccess.createAuth(new AuthData(authToken, request.username()));
+            return new RegisterResult(request.username(), authToken);
+        }
+    }
+
+    /** Logs in an existing user, creates a new auth token, and returns the result. */
+    public LoginResult loginUser(LoginRequest request) throws DataAccessException, BadRequestException, UnauthorizedException {
+        if (request.username() == null || request.password() == null) {
+            throw new BadRequestException("Make sure to input the right username and password");
+        } else {
+            UserData storedUser = dataAccess.getUser(request.username());
+            if (storedUser != null) {
+                if (!storedUser.password().equals(request.password())) {
+                    throw new UnauthorizedException("Your password is incorrect");
+                } else {
+                    String authToken = UUID.randomUUID().toString();
+                    dataAccess.createAuth(new AuthData(authToken, request.username()));
+                    return new LoginResult(request.username(), authToken);
+                }
+            }
+        }
+        throw new UnauthorizedException("Unauthorized");
+    }
+
+    /** Logs out a user by deleting their auth token. */
+    public void logoutUser(LogoutRequest request) throws DataAccessException, UnauthorizedException {
+        String authToken = request.authToken();
+        if (dataAccess.getAuth(authToken) == null) {
+            throw new UnauthorizedException("User does not exist");
+        } else {
+            dataAccess.deleteAuth(authToken);
+        }
     }
 }

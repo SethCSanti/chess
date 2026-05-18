@@ -9,4 +9,8 @@ public class ListGamesResult extends Response {
     List<GameData> games;
     public ListGamesResult(List<GameData> games) { this.games = games; }
     public ListGamesResult(String message) { super(message); }
+
+    public List<GameData> getGames() {
+        return games;
+    }
 }
