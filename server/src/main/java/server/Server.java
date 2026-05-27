@@ -16,9 +16,14 @@ public class Server {
 
     private final Javalin javalin;
 
-    public Server() throws DataAccessException {
+    public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        MySQLDataAccess dataAccess = new MySQLDataAccess();
+        MySQLDataAccess dataAccess;
+        try {
+            dataAccess = new MySQLDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Failed to initialize data access", e);
+        }
 
         // store handlers as fields
         ClearHandler clearHandler = new ClearHandler(dataAccess);
