@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import model.*;
 import dataaccess.*;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import request.LogoutRequest;
 import request.RegisterRequest;
@@ -41,7 +42,7 @@ public class UserService {
         } else {
             UserData storedUser = dataAccess.getUser(request.username());
             if (storedUser != null) {
-                if (!storedUser.password().equals(request.password())) {
+                if (!BCrypt.checkpw(request.password(), storedUser.password())) {
                     throw new UnauthorizedException("Your password is incorrect");
                 } else {
                     String authToken = UUID.randomUUID().toString();
