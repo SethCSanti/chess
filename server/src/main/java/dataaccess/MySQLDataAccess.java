@@ -5,7 +5,6 @@ import model.*;
 import org.mindrot.jbcrypt.BCrypt;
 import server.JsonUtils;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.*;
 
@@ -54,7 +53,7 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();) {
+        try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement("DELETE FROM users")) {
                 ps.executeUpdate();
             }
@@ -176,10 +175,10 @@ public class MySQLDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         var statement = """
-        UPDATE games 
-        SET whiteUsername=?, blackUsername=?, gameName=?, game=? 
+        UPDATE games\s
+        SET whiteUsername=?, blackUsername=?, gameName=?, game=?\s
         WHERE gameID=?
-        """;
+       \s""";
 
         String gameJson = JsonUtils.toJson(game.game());
 
@@ -231,7 +230,7 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection();) {
+        try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement("DELETE FROM auth WHERE authToken = ?")) {
                 ps.setString(1, authToken);
                 ps.executeUpdate();
