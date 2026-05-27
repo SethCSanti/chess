@@ -22,7 +22,7 @@ public class MySQLDataAccessTest {
 
     // CREATE USER
     @Test
-    void createUserSuccess() throws DataAccessException {
+    void createUserSuccess() {
         assertDoesNotThrow(() ->
                 dataAccess.createUser(new UserData("alice", "pass", "alice@email.com")));
     }
@@ -51,7 +51,7 @@ public class MySQLDataAccessTest {
 
     // CREATE AUTH
     @Test
-    void createAuthSuccess() throws DataAccessException {
+    void createAuthSuccess() {
         assertDoesNotThrow(() ->
                 dataAccess.createAuth(new AuthData("token123", "alice")));
     }
