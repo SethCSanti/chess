@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.*;
 import org.mindrot.jbcrypt.BCrypt;
+
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.*;
 
@@ -12,15 +14,63 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     private void initializeDatabase() throws DataAccessException {
+        String[] statements = {
+                """
+        CREATE TABLE IF NOT EXISTS users (
+            username VARCHAR(256) NOT NULL PRIMARY KEY,
+            password VARCHAR(256) NOT NULL,
+            email    VARCHAR(256) NOT NULL
+        )
+        """,
+                """
+        CREATE TABLE IF NOT EXISTS auth (
+            authToken VARCHAR(256) NOT NULL PRIMARY KEY,
+            username  VARCHAR(256) NOT NULL
+        )
+        """,
+                """
+        CREATE TABLE IF NOT EXISTS games (
+            gameID        INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            whiteUsername VARCHAR(256),
+            blackUsername VARCHAR(256),
+            gameName      VARCHAR(256) NOT NULL,
+            game          TEXT         NOT NULL
+        )
+        """
+        };
 
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : statements) {
+                try (var ps = conn.prepareStatement(statement)) {
+                    ps.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to initialize database", e);
+        }
     }
 
     @Override
-    public void clear() throws DataAccessException { }
+    public void clear() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();) {
+            try (var ps = conn.prepareStatement("DELETE FROM users")) {
+                ps.executeUpdate();
+            }
+            try (var ps = conn.prepareStatement("DELETE FROM auth")) {
+                ps.executeUpdate();
+            }
+            try  (var ps = conn.prepareStatement("DELETE FROM games")) {
+                ps.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to clear", e);
+        }
+    }
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement)) {
@@ -29,7 +79,7 @@ public class MySQLDataAccess implements DataAccess {
             ps.setString(3, user.email());
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new  DataAccessException("Unable to create user", e);
+            throw new DataAccessException("Unable to create user", e);
         }
     }
 
