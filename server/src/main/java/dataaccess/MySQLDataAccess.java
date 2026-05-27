@@ -113,11 +113,44 @@ public class MySQLDataAccess implements DataAccess {
     public void updateGame(GameData game) throws DataAccessException { }
 
     @Override
-    public void createAuth(AuthData auth) throws DataAccessException { }
+    public void createAuth(AuthData auth) throws DataAccessException {
+        var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+            ps.setString(1, auth.authToken());
+            ps.setString(2, auth.username());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to create token", e);
+        }
+    }
 
     @Override
-    public AuthData getAuth(String authToken) throws DataAccessException { return null; }
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        var statement = "SELECT authToken, username FROM auth WHERE authToken = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+            ps.setString(1, authToken);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new AuthData(rs.getString("authToken"), rs.getString("username"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to get user", e);
+        }
+        return null;
+    }
 
     @Override
-    public void deleteAuth(String authToken) throws DataAccessException { }
+    public void deleteAuth(String authToken) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();) {
+            try (var ps = conn.prepareStatement("DELETE FROM auth WHERE authToken = ?")) {
+                ps.setString(1, authToken);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to clear", e);
+        }
+    }
 }
