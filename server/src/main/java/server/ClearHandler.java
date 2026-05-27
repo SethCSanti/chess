@@ -5,6 +5,8 @@ import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import service.ClearService;
 
+import java.sql.SQLException;
+
 public class ClearHandler {
 
     private final ClearService clearService;
@@ -13,7 +15,7 @@ public class ClearHandler {
         this.clearService = new ClearService(dataAccess);
     }
 
-    public void handle(Context ctx) throws DataAccessException {
+    public void handle(Context ctx) throws DataAccessException, SQLException {
         clearService.clear();
         ctx.status(200);
         ctx.result(JsonUtils.toJson(new Response()));

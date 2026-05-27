@@ -4,6 +4,8 @@ import dataaccess.DataAccess;
 import model.*;
 import dataaccess.*;
 
+import java.sql.SQLException;
+
 public class ClearService {
 
     private final DataAccess dataAccess;
@@ -12,7 +14,7 @@ public class ClearService {
         this.dataAccess = dataAccess;
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws DataAccessException, SQLException {
             dataAccess.clear();
     }
 }

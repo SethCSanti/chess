@@ -11,6 +11,7 @@ import java.util.*;
 public class MySQLDataAccess implements DataAccess {
 
     public MySQLDataAccess() throws DataAccessException {
+        DatabaseManager.createDatabase();
         initializeDatabase();
     }
 
