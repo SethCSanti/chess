@@ -1,7 +1,9 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.*;
 import org.mindrot.jbcrypt.BCrypt;
+import server.JsonUtils;
 
 import javax.xml.crypto.Data;
 import java.sql.*;
@@ -101,7 +103,26 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     @Override
-    public int createGame(GameData game) throws DataAccessException { return 0; }
+    public int createGame(GameData game) throws DataAccessException {
+        var gameJson = JsonUtils.toJson(new ChessGame());
+        var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, null);
+            ps.setString(2, null);
+            ps.setString(3, game.gameName());
+            ps.setString(4, gameJson);
+            ps.executeUpdate();
+            try (var rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to create game", e);
+        }
+        return 0;
+    }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException { return null; }
@@ -137,7 +158,7 @@ public class MySQLDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to get user", e);
+            throw new DataAccessException("Unable to authenticate", e);
         }
         return null;
     }
