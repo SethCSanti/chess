@@ -2,7 +2,7 @@ package server;
 
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.MemoryDataAccess;
+import dataaccess.MySQLDataAccess;
 import io.javalin.*;
 
 public class Server {
@@ -16,9 +16,9 @@ public class Server {
 
     private final Javalin javalin;
 
-    public Server() {
+    public Server() throws DataAccessException {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        MemoryDataAccess dataAccess = new MemoryDataAccess();
+        MySQLDataAccess dataAccess = new MySQLDataAccess();
 
         // store handlers as fields
         ClearHandler clearHandler = new ClearHandler(dataAccess);
