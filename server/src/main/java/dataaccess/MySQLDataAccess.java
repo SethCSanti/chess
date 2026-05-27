@@ -125,7 +125,27 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException { return null; }
+    public GameData getGame(int gameID) throws DataAccessException {
+        var statement = "SELECT * FROM games WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+            ps.setInt(1, gameID);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new GameData(
+                            rs.getInt("gameID"),
+                            rs.getString("whiteUsername"),
+                            rs.getString("blackUsername"),
+                            rs.getString("gameName"),
+                            JsonUtils.fromJson(rs.getString("game"), ChessGame.class)
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to get game", e);
+        }
+        return null;
+    }
 
     @Override
     public List<GameData> listGames() throws DataAccessException { return null; }
