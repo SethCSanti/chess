@@ -1,9 +1,18 @@
 package server;
 
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 
 public class Server {
+    {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     private final Javalin javalin;
 
