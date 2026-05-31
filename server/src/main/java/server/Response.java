@@ -1,7 +1,7 @@
 package server;
 
 public class Response {
-    String message;
+    public String message;
 
     public Response(String message) {
         this.message = message;
