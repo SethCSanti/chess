@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessGame;
+
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -93,7 +95,7 @@ public class PostloginClient {
             String color = params[1].toUpperCase();
             int gameID = gameList.get(index).gameID();
             server.joinGame(authToken, color, gameID);
-            new GameplayClient(server, authToken, color).run();
+            new GameplayClient(server, authToken, color, new chess.ChessGame()).run();
             return "Left game.\n";
         }
         return "Expected: <game number> <WHITE|BLACK>\n";
@@ -108,7 +110,7 @@ public class PostloginClient {
             if (index < 0 || index >= gameList.size()) {
                 return "Invalid game number.\n";
             }
-            new GameplayClient(server, authToken, "OBSERVER").run();
+            new GameplayClient(server, authToken, "OBSERVER", new chess.ChessGame()).run();
             return "Left game.\n";
         }
         return "Expected: <game number>\n";

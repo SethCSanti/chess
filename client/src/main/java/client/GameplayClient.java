@@ -1,6 +1,7 @@
 package client;
 
-import java.util.Arrays;
+import chess.ChessGame;
+
 import java.util.Scanner;
 
 public class GameplayClient {
@@ -8,11 +9,13 @@ public class GameplayClient {
     private final String authToken;
     private final String playerColor;
     private final Scanner scanner = new Scanner(System.in);
+    private chess.ChessGame game;
 
-    public GameplayClient(ServerFacade server, String authToken, String playerColor) {
+    public GameplayClient(ServerFacade server, String authToken, String playerColor, ChessGame chessGame) {
         this.server = server;
         this.authToken = authToken;
         this.playerColor = playerColor;
+        this.game = chessGame;
     }
 
     public void run() {
@@ -48,10 +51,7 @@ public class GameplayClient {
     }
 
     private void drawBoard() {
-        // TODO - Step 6
-        // if playerColor.equals("BLACK") → draw from black's perspective
-        // otherwise (WHITE or OBSERVER) → draw from white's perspective
-        System.out.println("[Board will be drawn here]");
+        ui.BoardPrinter.draw(game.getBoard(), playerColor.equals("BLACK"));
     }
 
     private void printPrompt() {
