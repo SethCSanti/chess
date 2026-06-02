@@ -85,7 +85,12 @@ public class PostloginClient {
 
     private String join(String[] params) throws Exception {
         if (params.length >= 2) {
-            int index = Integer.parseInt(params[0]) - 1;
+            int index;
+            try {
+                index = Integer.parseInt(params[0]) - 1;
+            } catch (NumberFormatException e) {
+                return "Game number must be a valid integer.\n";
+            }
             if (gameList.isEmpty()) {
                 return "Please type 'list' first to see available games.\n";
             }
@@ -93,6 +98,9 @@ public class PostloginClient {
                 return "Invalid game number.\n";
             }
             String color = params[1].toUpperCase();
+            if (!color.equals("WHITE") && !color.equals("BLACK")) {
+                return "Color must be WHITE or BLACK.\n";
+            }
             int gameID = gameList.get(index).gameID();
             server.joinGame(authToken, color, gameID);
             new GameplayClient(server, authToken, color, new chess.ChessGame()).run();
@@ -101,9 +109,14 @@ public class PostloginClient {
         return "Expected: <game number> <WHITE|BLACK>\n";
     }
 
-    private String observe(String[] params) {
+    private String observe(String[] params) throws Exception {
         if (params.length >= 1) {
-            int index = Integer.parseInt(params[0]) - 1;
+            int index;
+            try {
+                index = Integer.parseInt(params[0]) - 1;
+            } catch (NumberFormatException e) {
+                return "Game number must be a valid integer.\n";
+            }
             if (gameList.isEmpty()) {
                 return "Please type 'list' first to see available games.\n";
             }
