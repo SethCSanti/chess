@@ -5,19 +5,20 @@ import java.util.Scanner;
 
 public class GameplayClient {
     private final ServerFacade server;
+    private final String authToken;
+    private final String playerColor;
     private final Scanner scanner = new Scanner(System.in);
 
-    public GameplayClient(ServerFacade server, String authToken, String color) {
+    public GameplayClient(ServerFacade server, String authToken, String playerColor) {
         this.server = server;
+        this.authToken = authToken;
+        this.playerColor = playerColor;
     }
 
     public void run() {
-        System.out.println("Welcome to Chess! Type 'help' to get started.");
-        System.out.print(help());
+        drawBoard();
 
         var result = "";
-
-        // call board drawing method once written
         while (!result.equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
@@ -33,21 +34,24 @@ public class GameplayClient {
     private String eval(String input) {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
-        String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
-            case "leave" -> leave(params);
-            case "redraw" -> redraw(params);
+            case "leave" -> "quit";
+            case "redraw" -> redraw();
             case "help" -> help();
             default -> "Unknown command. Type 'help' for options.\n";
         };
     }
 
-    private String leave(String[] params) {
-        // TODO
+    private String redraw() {
+        drawBoard();
+        return "";
     }
 
-    private String redraw(String[] params) {
-        // TODO
+    private void drawBoard() {
+        // TODO - Step 6
+        // if playerColor.equals("BLACK") → draw from black's perspective
+        // otherwise (WHITE or OBSERVER) → draw from white's perspective
+        System.out.println("[Board will be drawn here]");
     }
 
     private void printPrompt() {
@@ -56,9 +60,8 @@ public class GameplayClient {
 
     private String help() {
         return """
-                - register <username> <password> <email>
-                - login <username> <password>
-                - quit
+                - redraw
+                - leave
                 - help
                 """;
     }

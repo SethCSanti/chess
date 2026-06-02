@@ -99,7 +99,7 @@ public class PostloginClient {
         return "Expected: <game number> <WHITE|BLACK>\n";
     }
 
-    private String observe(String[] params) throws Exception {
+    private String observe(String[] params) {
         if (params.length >= 1) {
             int index = Integer.parseInt(params[0]) - 1;
             if (gameList.isEmpty()) {
@@ -115,7 +115,7 @@ public class PostloginClient {
     }
 
     private void printPrompt() {
-        System.out.print("\n[LOGGED_IN] >>> ");
+        System.out.print("\n[" + username + "] >>> ");
     }
 
     private String help() {
