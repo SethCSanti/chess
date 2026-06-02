@@ -28,7 +28,7 @@ public class PreloginClient {
         }
     }
 
-    private String eval(String input) {
+    private String eval(String input) throws Exception {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -41,12 +41,31 @@ public class PreloginClient {
         };
     }
 
-    private String register(String[] params) {
-        // TODO
+    private String register(String[] params) throws Exception {
+        if  (params.length >= 3) {
+            var result = server.register(params[0], params[1], params[2]);
+            var authToken = result.getAuthToken();
+            var username = result.getUsername();
+            var obj = new PostloginClient(server, authToken, username);
+            obj.run();
+            return "Registered and logged in as " + username + "\n";
+            }
+         else {
+            return "Expected: <username> <password> <email>\n";
+        }
     }
 
-    private String login(String[] params) {
-        // TODO
+    private String login(String[] params) throws Exception {
+        if  (params.length >= 2) {
+            var result = server.login(params[0], params[1]);
+            var authToken = result.getAuthToken();
+            var username = result.getUsername();
+            var obj = new PostloginClient(server, authToken, username);
+            obj.run();
+            return "Logged in as " + username + "\n";
+        } else {
+            return "Expected: <username> <password>\n";
+        }
     }
 
     private void printPrompt() {
