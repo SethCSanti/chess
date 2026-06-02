@@ -6,9 +6,14 @@ import java.util.Scanner;
 public class PostloginClient {
     private final ServerFacade server;
     private final Scanner scanner = new Scanner(System.in);
+    private final String authToken;
+    private final String username;
+    private java.util.List<model.GameData> gameList = new java.util.ArrayList<>();
 
     public PostloginClient(ServerFacade server, String authToken, String username) {
         this.server = server;
+        this.authToken = authToken;
+        this.username = username;
     }
 
     public void run() {
@@ -28,13 +33,13 @@ public class PostloginClient {
         }
     }
 
-    private String eval(String input) {
+    private String eval(String input) throws Exception {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
-            case "logout" -> logout(params);
-            case "list" -> list(params);
+            case "logout" -> logout();
+            case "list" -> list();
             case "help" -> help();
             case "create" -> create(params);
             case "join" -> join(params);
@@ -43,24 +48,70 @@ public class PostloginClient {
         };
     }
 
-    private String logout(String[] params) {
-        // TODO
+    private String logout() throws Exception {
+        server.logout(authToken);
+        return "quit";
     }
 
-    private String list(String[] params) {
-        // TODO
+    private String list() throws Exception {
+        var result = server.listGames(authToken);
+        gameList = result.getGames();
+        if (gameList.isEmpty()) {
+            return "No games available.\n";
+        }
+        var sb = new StringBuilder();
+        for (int i = 0; i < gameList.size(); i++) {
+            var game = gameList.get(i);
+            sb.append(String.format("%d. %s | White: %s | Black: %s%n",
+                    i + 1,
+                    game.gameName(),
+                    game.whiteUsername() != null ? game.whiteUsername() : "open",
+                    game.blackUsername() != null ? game.blackUsername() : "open"));
+        }
+        return sb.toString();
     }
 
-    private String create(String[] params) {
-        // TODO
+    private String create(String[] params) throws Exception {
+        if  (params.length >= 1) {
+            server.createGame(authToken, params[0]);
+            return "Game '" + params[0] + "' created! Type 'list' to see all games.\n";
+        }
+        else {
+            return "Expected: <game name>\n";
+        }
     }
 
-    private String join(String[] params) {
-        // TODO
+    private String join(String[] params) throws Exception {
+        if (params.length >= 2) {
+            int index = Integer.parseInt(params[0]) - 1;
+            if (gameList.isEmpty()) {
+                return "Please type 'list' first to see available games.\n";
+            }
+            if (index < 0 || index >= gameList.size()) {
+                return "Invalid game number.\n";
+            }
+            String color = params[1].toUpperCase();
+            int gameID = gameList.get(index).gameID();
+            server.joinGame(authToken, color, gameID);
+            new GameplayClient(server, authToken, color).run();
+            return "Left game.\n";
+        }
+        return "Expected: <game number> <WHITE|BLACK>\n";
     }
 
-    private String observe(String[] params) {
-        // TODO
+    private String observe(String[] params) throws Exception {
+        if (params.length >= 1) {
+            int index = Integer.parseInt(params[0]) - 1;
+            if (gameList.isEmpty()) {
+                return "Please type 'list' first to see available games.\n";
+            }
+            if (index < 0 || index >= gameList.size()) {
+                return "Invalid game number.\n";
+            }
+            new GameplayClient(server, authToken, "OBSERVER").run();
+            return "Left game.\n";
+        }
+        return "Expected: <game number>\n";
     }
 
     private void printPrompt() {
@@ -69,10 +120,12 @@ public class PostloginClient {
 
     private String help() {
         return """
-                - register <username> <password> <email>
-                - login <username> <password>
-                - quit
-                - help
-                """;
+            - list
+            - create <game name>
+            - join <game number> <WHITE|BLACK>
+            - observe <game number>
+            - logout
+            - help
+            """;
     }
 }

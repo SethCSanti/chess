@@ -7,7 +7,7 @@ public class GameplayClient {
     private final ServerFacade server;
     private final Scanner scanner = new Scanner(System.in);
 
-    public GameplayClient(ServerFacade server, String authToken String playerColor) {
+    public GameplayClient(ServerFacade server, String authToken, String color) {
         this.server = server;
     }
 
