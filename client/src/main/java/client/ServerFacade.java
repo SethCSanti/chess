@@ -25,11 +25,13 @@ public class ServerFacade {
     }
 
     public LoginResult login(String username, String password) throws Exception {
-        // TODO
+        var body = new  LoginRequest(username, password);
+        var response = sendRequest("POST", "/session", body, null);
+        return gson.fromJson(response, LoginResult.class);
     }
 
     public void logout(String authToken) throws Exception {
-        // TODO
+        sendRequest("DELETE", "/session", null, authToken);
     }
 
     public ListGamesResult listGames(String authToken) throws Exception {
@@ -45,7 +47,7 @@ public class ServerFacade {
     }
 
     public void clear() throws Exception {
-        // TODO
+        sendRequest("DELETE", "/db", null, null);
     }
 
     private String sendRequest(String method, String path, Object body, String authToken) throws Exception {
