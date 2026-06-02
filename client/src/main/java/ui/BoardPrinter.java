@@ -4,13 +4,11 @@ import chess.*;
 
 public class BoardPrinter {
 
+    private static final String SET_BG_COLOR_FOREST_GREEN = "\u001b[48;5;22m";
+
     public static void draw(ChessBoard board, boolean isBlack) {
         System.out.println();
-        if (isBlack) {
-            printBoard(board, true);
-        } else {
-            printBoard(board, false);
-        }
+        printBoard(board, isBlack);
         System.out.println();
     }
 
@@ -26,7 +24,8 @@ public class BoardPrinter {
         int rowStep = isBlack ? 1 : -1;
 
         for (int row = rowStart; row != rowEnd + rowStep; row += rowStep) {
-            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(SET_BG_COLOR_FOREST_GREEN);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
             System.out.print(" " + row + " ");
 
             int colStart = isBlack ? 8 : 1;
@@ -44,8 +43,11 @@ public class BoardPrinter {
                 System.out.print(getPieceString(piece));
             }
 
-            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(SET_BG_COLOR_FOREST_GREEN);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
             System.out.print(" " + row + " ");
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
             System.out.println();
         }
 
@@ -53,11 +55,15 @@ public class BoardPrinter {
     }
 
     private static void printColLabels(String[] labels) {
-        System.out.print(EscapeSequences.RESET_BG_COLOR);
+        System.out.print(SET_BG_COLOR_FOREST_GREEN);
+        System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
         System.out.print("   ");
         for (String label : labels) {
-            System.out.print(" " + label + " ");
+            System.out.print("\u2003" + label + " ");
         }
+        System.out.print("   ");
+        System.out.print(EscapeSequences.RESET_BG_COLOR);
+        System.out.print(EscapeSequences.RESET_TEXT_COLOR);
         System.out.println();
     }
 
@@ -65,19 +71,23 @@ public class BoardPrinter {
         if (piece == null) {
             return EscapeSequences.EMPTY;
         }
-        return switch (piece.getPieceType()) {
-            case KING   -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+        String colorCode = piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
+                EscapeSequences.SET_TEXT_COLOR_WHITE :
+                EscapeSequences.SET_TEXT_COLOR_MAGENTA;
+        String pieceStr = switch (piece.getPieceType()) {
+            case KING   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_KING   : EscapeSequences.BLACK_KING;
-            case QUEEN  -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+            case QUEEN  -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_QUEEN  : EscapeSequences.BLACK_QUEEN;
-            case BISHOP -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+            case BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
-            case KNIGHT -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+            case KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
-            case ROOK   -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+            case ROOK   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_ROOK   : EscapeSequences.BLACK_ROOK;
-            case PAWN   -> piece.getTeamColor() == chess.ChessGame.TeamColor.WHITE ?
+            case PAWN   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
                     EscapeSequences.WHITE_PAWN   : EscapeSequences.BLACK_PAWN;
         };
+        return colorCode + pieceStr;
     }
 }
