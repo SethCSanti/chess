@@ -7,7 +7,7 @@ public class PostloginClient {
     private final ServerFacade server;
     private final Scanner scanner = new Scanner(System.in);
 
-    public PostloginClient(ServerFacade server) {
+    public PostloginClient(ServerFacade server, String authToken, String username) {
         this.server = server;
     }
 
@@ -33,24 +33,38 @@ public class PostloginClient {
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
-            case "register" -> register(params);
-            case "login" -> login(params);
+            case "logout" -> logout(params);
+            case "list" -> list(params);
             case "help" -> help();
-            case "quit" -> "quit";
+            case "create" -> create(params);
+            case "join" -> join(params);
+            case "observe" -> observe(params);
             default -> "Unknown command. Type 'help' for options.\n";
         };
     }
 
-    private String register(String[] params) {
+    private String logout(String[] params) {
         // TODO
     }
 
-    private String login(String[] params) {
+    private String list(String[] params) {
+        // TODO
+    }
+
+    private String create(String[] params) {
+        // TODO
+    }
+
+    private String join(String[] params) {
+        // TODO
+    }
+
+    private String observe(String[] params) {
         // TODO
     }
 
     private void printPrompt() {
-        System.out.print("\n[LOGGED_OUT] >>> ");
+        System.out.print("\n[LOGGED_IN] >>> ");
     }
 
     private String help() {

@@ -7,7 +7,7 @@ public class GameplayClient {
     private final ServerFacade server;
     private final Scanner scanner = new Scanner(System.in);
 
-    public GameplayClient(ServerFacade server) {
+    public GameplayClient(ServerFacade server, String authToken String playerColor) {
         this.server = server;
     }
 
@@ -16,6 +16,8 @@ public class GameplayClient {
         System.out.print(help());
 
         var result = "";
+
+        // call board drawing method once written
         while (!result.equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
@@ -33,24 +35,23 @@ public class GameplayClient {
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
-            case "register" -> register(params);
-            case "login" -> login(params);
+            case "leave" -> leave(params);
+            case "redraw" -> redraw(params);
             case "help" -> help();
-            case "quit" -> "quit";
             default -> "Unknown command. Type 'help' for options.\n";
         };
     }
 
-    private String register(String[] params) {
+    private String leave(String[] params) {
         // TODO
     }
 
-    private String login(String[] params) {
+    private String redraw(String[] params) {
         // TODO
     }
 
     private void printPrompt() {
-        System.out.print("\n[LOGGED_OUT] >>> ");
+        System.out.print("\n[IN_GAME] >>> ");
     }
 
     private String help() {
