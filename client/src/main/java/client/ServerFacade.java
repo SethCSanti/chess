@@ -79,7 +79,7 @@ public class ServerFacade {
             try (InputStream es  = conn.getErrorStream();
                  InputStreamReader isr = new InputStreamReader(es)) {
                 var errorResponse = gson.fromJson(isr, ErrorResponse.class);
-                throw new Exception(errorResponse.message);
+                throw new Exception(errorResponse.message());
             }
         }
 
