@@ -35,15 +35,19 @@ public class ServerFacade {
     }
 
     public ListGamesResult listGames(String authToken) throws Exception {
-        // TODO
+        var response = sendRequest("GET", "/game", null, authToken);
+        return gson.fromJson(response, ListGamesResult.class);
     }
 
     public CreateGameResult createGame(String authToken, String gameName) throws Exception {
-        // TODO
+        var body = new  CreateGameRequest(gameName);
+        var response = sendRequest("POST", "/game", body, authToken);
+        return gson.fromJson(response, CreateGameResult.class);
     }
 
     public void joinGame(String authToken, String playerColor, int gameID) throws Exception {
-        // TODO
+        var body = new  JoinGameRequest(playerColor, gameID);
+        sendRequest("PUT", "/game", body, authToken);
     }
 
     public void clear() throws Exception {
@@ -51,7 +55,7 @@ public class ServerFacade {
     }
 
     private String sendRequest(String method, String path, Object body, String authToken) throws Exception {
-        URL url = new URL(baseUrl + path);
+        URL url = URI.create(baseUrl + path).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod(method);
         conn.setRequestProperty("Content-Type", "application/json");
