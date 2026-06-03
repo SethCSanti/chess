@@ -18,6 +18,7 @@ public class PostloginClient {
         this.username = username;
     }
 
+    /** Starts the postlogin REPL loop, accepting input until the user logs out. */
     public void run() {
         System.out.println("Welcome to Chess! Type 'help' to get started.");
         System.out.print(help());
@@ -35,6 +36,7 @@ public class PostloginClient {
         }
     }
 
+    /** Parses the input and dispatches to the appropriate command method. */
     private String eval(String input) throws Exception {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
@@ -50,11 +52,14 @@ public class PostloginClient {
         };
     }
 
+    /** Logs out the current user and returns to the prelogin REPL. */
     private String logout() throws Exception {
         server.logout(authToken);
+        System.out.println("Logged out successfully.");
         return "quit";
     }
 
+    /** Retrieves and displays all available games from the server. */
     private String list() throws Exception {
         var result = server.listGames(authToken);
         gameList = result.getGames();
@@ -73,16 +78,16 @@ public class PostloginClient {
         return sb.toString();
     }
 
+    /** Creates a new chess game on the server with the given name. */
     private String create(String[] params) throws Exception {
-        if  (params.length >= 1) {
+        if (params.length >= 1) {
             server.createGame(authToken, params[0]);
             return "Game '" + params[0] + "' created! Type 'list' to see all games.\n";
         }
-        else {
-            return "Expected: <game name>\n";
-        }
+        return "Expected: <game name>\n";
     }
 
+    /** Joins an existing game as the specified color and transitions to the gameplay REPL. */
     private String join(String[] params) throws Exception {
         if (params.length >= 2) {
             int index;
@@ -103,12 +108,13 @@ public class PostloginClient {
             }
             int gameID = gameList.get(index).gameID();
             server.joinGame(authToken, color, gameID);
-            new GameplayClient(server, authToken, color, new chess.ChessGame()).run();
-            return "Left game.\n";
+            new GameplayClient(server, authToken, color, new ChessGame()).run();
+            return "";
         }
         return "Expected: <game number> <WHITE|BLACK>\n";
     }
 
+    /** Observes an existing game from the white perspective and transitions to the gameplay REPL. */
     private String observe(String[] params) throws Exception {
         if (params.length >= 1) {
             int index;
@@ -123,24 +129,26 @@ public class PostloginClient {
             if (index < 0 || index >= gameList.size()) {
                 return "Invalid game number.\n";
             }
-            new GameplayClient(server, authToken, "OBSERVER", new chess.ChessGame()).run();
-            return "Left game.\n";
+            new GameplayClient(server, authToken, "OBSERVER", new ChessGame()).run();
+            return "";
         }
         return "Expected: <game number>\n";
     }
 
+    /** Prints the postlogin prompt showing the current username. */
     private void printPrompt() {
         System.out.print("\n[" + username + "] >>> ");
     }
 
+    /** Returns the list of available postlogin commands. */
     private String help() {
         return """
-            - list
-            - create <game name>
-            - join <game number> <WHITE|BLACK>
-            - observe <game number>
-            - logout
-            - help
-            """;
+                - list
+                - create <game name>
+                - join <game number> <WHITE|BLACK>
+                - observe <game number>
+                - logout
+                - help
+                """;
     }
 }
