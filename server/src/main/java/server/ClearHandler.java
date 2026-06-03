@@ -3,6 +3,7 @@ package server;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
+import model.Response;
 import service.ClearService;
 
 import java.sql.SQLException;

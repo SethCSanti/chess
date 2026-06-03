@@ -1,15 +1,15 @@
 package result;
 
-import server.Response;
+import model.Response;
 
-public class LoginResult extends Response {
+public class RegisterResult extends Response {
     String username;
     String authToken;
-    public LoginResult(String username, String authToken) {
+    public RegisterResult(String username, String authToken) {
         this.username = username;
         this.authToken = authToken;
     }
-    public LoginResult(String message) { super(message); }
+    public RegisterResult(String message) { super(message); }
 
     public String getUsername() {
         return username;

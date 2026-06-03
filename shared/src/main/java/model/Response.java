@@ -1,4 +1,4 @@
-package server;
+package model;
 
 public class Response {
     public String message;

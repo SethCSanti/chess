@@ -1,8 +1,9 @@
 package client;
 
 import org.junit.jupiter.api.*;
+import result.LoginResult;
+import result.RegisterResult;
 import server.Server;
-import result.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,7 +83,7 @@ public class ServerFacadeTests {
     void listGamesSuccess() throws Exception {
         RegisterResult result = facade.register("seth", "pass123", "seth@email.com");
         facade.createGame(result.getAuthToken(), "testGame");
-        ListGamesResult listResult = facade.listGames(result.getAuthToken());
+        result.ListGamesResult listResult = facade.listGames(result.getAuthToken());
         assertNotNull(listResult.getGames());
         assertEquals(1, listResult.getGames().size());
     }
@@ -98,7 +99,7 @@ public class ServerFacadeTests {
     @Test
     void createGameSuccess() throws Exception {
         RegisterResult result = facade.register("seth", "pass123", "seth@email.com");
-        CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
+        result.CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
         assertNotNull(gameResult.getGameID());
         assertTrue(gameResult.getGameID() > 0);
     }
@@ -114,7 +115,7 @@ public class ServerFacadeTests {
     @Test
     void joinGameSuccess() throws Exception {
         RegisterResult result = facade.register("seth", "pass123", "seth@email.com");
-        CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
+        result.CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
         assertDoesNotThrow(() ->
                 facade.joinGame(result.getAuthToken(), "WHITE", gameResult.getGameID()));
     }
@@ -122,7 +123,7 @@ public class ServerFacadeTests {
     @Test
     void joinGameColorTakenFails() throws Exception {
         RegisterResult result = facade.register("seth", "pass123", "seth@email.com");
-        CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
+        result.CreateGameResult gameResult = facade.createGame(result.getAuthToken(), "testGame");
         facade.joinGame(result.getAuthToken(), "WHITE", gameResult.getGameID());
         assertThrows(Exception.class, () ->
                 facade.joinGame(result.getAuthToken(), "WHITE", gameResult.getGameID()));

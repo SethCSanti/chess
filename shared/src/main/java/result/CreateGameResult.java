@@ -1,6 +1,6 @@
 package result;
 
-import server.Response;
+import model.Response;
 
 public class CreateGameResult extends Response {
     Integer gameID;

@@ -2,6 +2,7 @@ package server;
 
 import dataaccess.DataAccess;
 import io.javalin.http.Context;
+import model.Response;
 import request.LogoutRequest;
 import service.UserService;
 

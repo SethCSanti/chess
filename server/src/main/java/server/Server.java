@@ -4,6 +4,7 @@ import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.MySQLDataAccess;
 import io.javalin.*;
+import model.Response;
 
 public class Server {
     {

@@ -1,8 +1,14 @@
 package client;
 
 import com.google.gson.Gson;
-import request.*;
-import result.*;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import request.LoginRequest;
+import request.RegisterRequest;
+import result.CreateGameResult;
+import result.ListGamesResult;
+import result.LoginResult;
+import result.RegisterResult;
 
 import java.io.*;
 import java.net.*;
@@ -25,7 +31,7 @@ public class ServerFacade {
     }
 
     public LoginResult login(String username, String password) throws Exception {
-        var body = new  LoginRequest(username, password);
+        var body = new LoginRequest(username, password);
         var response = sendRequest("POST", "/session", body, null);
         return gson.fromJson(response, LoginResult.class);
     }
@@ -40,13 +46,13 @@ public class ServerFacade {
     }
 
     public CreateGameResult createGame(String authToken, String gameName) throws Exception {
-        var body = new  CreateGameRequest(gameName);
+        var body = new CreateGameRequest(gameName);
         var response = sendRequest("POST", "/game", body, authToken);
         return gson.fromJson(response, CreateGameResult.class);
     }
 
     public void joinGame(String authToken, String playerColor, int gameID) throws Exception {
-        var body = new  JoinGameRequest(playerColor, gameID);
+        var body = new JoinGameRequest(playerColor, gameID);
         sendRequest("PUT", "/game", body, authToken);
     }
 

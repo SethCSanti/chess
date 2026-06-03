@@ -1,7 +1,7 @@
 package result;
 
 import model.GameData;
-import server.Response;
+import model.Response;
 
 import java.util.List;
 
