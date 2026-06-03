@@ -33,7 +33,7 @@ public class BoardPrinter {
             int colStep = isBlack ? -1 : 1;
 
             for (int col = colStart; col != colEnd + colStep; col += colStep) {
-                boolean isLightSquare = (row + col) % 2 == 0;
+                boolean isLightSquare = (row + col) % 2 != 0;
                 if (isLightSquare) {
                     System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
                 } else {
