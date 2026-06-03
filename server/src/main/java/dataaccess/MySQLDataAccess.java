@@ -2,7 +2,6 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.*;
-import org.mindrot.jbcrypt.BCrypt;
 import server.JsonUtils;
 
 import java.sql.*;
@@ -73,11 +72,10 @@ public class MySQLDataAccess implements DataAccess {
     @Override
     public void createUser(UserData user) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement)) {
             ps.setString(1, user.username());
-            ps.setString(2, hashedPassword);
+            ps.setString(2, user.password());  // already hashed by UserService
             ps.setString(3, user.email());
             ps.executeUpdate();
         } catch (SQLException e) {

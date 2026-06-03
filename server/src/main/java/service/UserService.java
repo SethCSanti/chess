@@ -25,10 +25,11 @@ public class UserService {
     public RegisterResult registerUser(RegisterRequest request) throws BadRequestException, AlreadyTakenException, DataAccessException {
         if (request.username() == null || request.password() == null || request.email() == null) {
             throw new BadRequestException("Make sure to input a username, password, and email");
-        } else if (dataAccess.getUser(request.username())  != null) {
+        } else if (dataAccess.getUser(request.username()) != null) {
             throw new AlreadyTakenException("Username is already taken");
         } else {
-            dataAccess.createUser(new UserData(request.username(), request.password(), request.email()));
+            String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+            dataAccess.createUser(new UserData(request.username(), hashedPassword, request.email()));
             String authToken = UUID.randomUUID().toString();
             dataAccess.createAuth(new AuthData(authToken, request.username()));
             return new RegisterResult(request.username(), authToken);
@@ -39,19 +40,21 @@ public class UserService {
     public LoginResult loginUser(LoginRequest request) throws DataAccessException, BadRequestException, UnauthorizedException {
         if (request.username() == null || request.password() == null) {
             throw new BadRequestException("Make sure to input the right username and password");
-        } else {
-            UserData storedUser = dataAccess.getUser(request.username());
-            if (storedUser != null) {
-                if (!BCrypt.checkpw(request.password(), storedUser.password())) {
-                    throw new UnauthorizedException("Your password is incorrect");
-                } else {
-                    String authToken = UUID.randomUUID().toString();
-                    dataAccess.createAuth(new AuthData(authToken, request.username()));
-                    return new LoginResult(request.username(), authToken);
-                }
-            }
         }
-        throw new UnauthorizedException("Unauthorized");
+        UserData storedUser = dataAccess.getUser(request.username());
+        if (storedUser == null) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+        try {
+            if (!BCrypt.checkpw(request.password(), storedUser.password())) {
+                throw new UnauthorizedException("Your password is incorrect");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new UnauthorizedException("Your password is incorrect");
+        }
+        String authToken = UUID.randomUUID().toString();
+        dataAccess.createAuth(new AuthData(authToken, request.username()));
+        return new LoginResult(request.username(), authToken);
     }
 
     /** Logs out a user by deleting their auth token. */
