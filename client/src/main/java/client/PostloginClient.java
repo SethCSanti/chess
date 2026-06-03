@@ -1,43 +1,22 @@
 package client;
 
 import chess.ChessGame;
-
 import java.util.Arrays;
-import java.util.Scanner;
 
-public class PostloginClient {
-    private final ServerFacade server;
-    private final Scanner scanner = new Scanner(System.in);
+public class PostloginClient extends ClientBase {
     private final String authToken;
     private final String username;
     private java.util.List<model.GameData> gameList = new java.util.ArrayList<>();
 
     public PostloginClient(ServerFacade server, String authToken, String username) {
-        this.server = server;
+        super(server);
         this.authToken = authToken;
         this.username = username;
     }
 
-    /** Starts the postlogin REPL loop, accepting input until the user logs out. */
-    public void run() {
-        System.out.println("Welcome to Chess! Type 'help' to get started.");
-        System.out.print(help());
-
-        var result = "";
-        while (!result.equals("quit")) {
-            printPrompt();
-            String line = scanner.nextLine();
-            try {
-                result = eval(line);
-                System.out.print(result);
-            } catch (Throwable e) {
-                System.out.print(e.getMessage());
-            }
-        }
-    }
-
     /** Parses the input and dispatches to the appropriate command method. */
-    private String eval(String input) throws Exception {
+    @Override
+    protected String eval(String input) throws Exception {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -135,13 +114,21 @@ public class PostloginClient {
         return "Expected: <game number>\n";
     }
 
+    @Override
+    public void run() {
+        System.out.println("Welcome to Chess! Type 'help' to get started.");
+        super.run();
+    }
+
     /** Prints the postlogin prompt showing the current username. */
-    private void printPrompt() {
+    @Override
+    protected void printPrompt() {
         System.out.print("\n[" + username + "] >>> ");
     }
 
     /** Returns the list of available postlogin commands. */
-    private String help() {
+    @Override
+    protected String help() {
         return """
                 - list
                 - create <game name>

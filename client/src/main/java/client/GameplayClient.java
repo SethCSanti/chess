@@ -2,41 +2,28 @@ package client;
 
 import chess.ChessGame;
 
-import java.util.Scanner;
-
-public class GameplayClient {
-    private final ServerFacade server;
+public class GameplayClient extends ClientBase {
     private final String authToken;
     private final String playerColor;
-    private final Scanner scanner = new Scanner(System.in);
     private chess.ChessGame game;
 
     public GameplayClient(ServerFacade server, String authToken, String playerColor, ChessGame chessGame) {
-        this.server = server;
+        super(server);
         this.authToken = authToken;
         this.playerColor = playerColor;
         this.game = chessGame;
     }
 
-    /** Starts the gameplay REPL loop, drawing the board immediately and accepting input until the user leaves. */
+    /** Draws the board immediately then starts the gameplay REPL loop until the user leaves. */
+    @Override
     public void run() {
         drawBoard();
-
-        var result = "";
-        while (!result.equals("quit")) {
-            printPrompt();
-            String line = scanner.nextLine();
-            try {
-                result = eval(line);
-                System.out.print(result);
-            } catch (Throwable e) {
-                System.out.print(e.getMessage());
-            }
-        }
+        super.run();
     }
 
     /** Parses the input and dispatches to the appropriate command method. */
-    private String eval(String input) {
+    @Override
+    protected String eval(String input) {
         String[] tokens = input.toLowerCase().trim().split(" ");
         String cmd = (tokens.length > 0) ? tokens[0] : "help";
         return switch (cmd) {
@@ -62,12 +49,14 @@ public class GameplayClient {
     }
 
     /** Prints the gameplay prompt indicating the user is in a game. */
-    private void printPrompt() {
+    @Override
+    protected void printPrompt() {
         System.out.print("\n[IN_GAME] >>> ");
     }
 
     /** Returns the list of available gameplay commands. */
-    private String help() {
+    @Override
+    protected String help() {
         return """
                 - redraw
                 - leave
