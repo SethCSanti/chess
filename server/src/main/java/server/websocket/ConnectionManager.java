@@ -1,4 +1,4 @@
-package websocket;
+package server.websocket;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;

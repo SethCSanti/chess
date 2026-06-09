@@ -1,0 +1,83 @@
+package server.websocket;
+
+import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import io.javalin.websocket.*;
+import org.eclipse.jetty.websocket.api.Session;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.ServerMessage;
+
+public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
+
+    private final DataAccess dataAccess;
+    private final ConnectionManager connections = new ConnectionManager();
+
+    public WebSocketHandler(DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
+    }
+
+    @Override
+    public void handleConnect(WsConnectContext ctx) {
+        ctx.enableAutomaticPings();
+        System.out.println("Websocket connected");
+    }
+
+    @Override
+    public void handleClose(WsCloseContext ctx) {
+        connections.remove(ctx.session);
+        System.out.println("Websocket closed");
+    }
+
+    @Override
+    public void handleMessage(WsMessageContext ctx) {
+        Session session = ctx.session;
+        try {
+            UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
+            int gameID = command.getGameID();
+            String username = getUsername(command.getAuthToken());
+            connections.add(gameID, session);
+            switch (command.getCommandType()) {
+                case CONNECT   -> connect(session, username, command);
+                case MAKE_MOVE -> makeMove(session, username, new Gson().fromJson(ctx.message(), MakeMoveCommand.class));
+                case LEAVE     -> leaveGame(session, username, command);
+                case RESIGN    -> resign(session, username, command);
+            }
+        } catch (dataaccess.UnauthorizedException ex) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized"));
+        } catch (Exception ex) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: " + ex.getMessage()));
+        }
+    }
+
+    private String getUsername(String authToken) throws dataaccess.UnauthorizedException, dataaccess.DataAccessException {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) { throw new dataaccess.UnauthorizedException("Invalid auth token"); }
+        return auth.username();
+    }
+
+    private void sendMessage(Session session, websocket.messages.ServerMessage message) {
+        try {
+            session.getRemote().sendString(new Gson().toJson(message));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void connect(Session session, String username, UserGameCommand command) throws Exception {
+        // TODO
+    }
+
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws Exception {
+        // TODO
+    }
+
+    private void leaveGame(Session session, String username, UserGameCommand command) throws Exception {
+        // TODO
+    }
+
+    private void resign(Session session, String username, UserGameCommand command) throws Exception {
+        // TODO
+    }
+}
