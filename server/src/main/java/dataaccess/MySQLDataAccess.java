@@ -135,7 +135,8 @@ public class MySQLDataAccess implements DataAccess {
                             rs.getString("whiteUsername"),
                             rs.getString("blackUsername"),
                             rs.getString("gameName"),
-                            JsonUtils.fromJson(rs.getString("game"), ChessGame.class)
+                            JsonUtils.fromJson(rs.getString("game"), ChessGame.class
+                            ), null
                     );
                 }
             }
@@ -160,7 +161,8 @@ public class MySQLDataAccess implements DataAccess {
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        JsonUtils.fromJson(rs.getString("game"), ChessGame.class)
+                        JsonUtils.fromJson(rs.getString("game"), ChessGame.class
+                        ), null
                 ));
             }
 

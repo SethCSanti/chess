@@ -28,7 +28,7 @@ public class GameService {
         } else if (request.gameName() == null) {
             throw new BadRequestException("Game name is required");
         } else {
-            int gameID = dataAccess.createGame(new GameData(0, null, null, request.gameName(), null));
+            int gameID = dataAccess.createGame(new GameData(0, null, null, request.gameName(), null, null));
             return new CreateGameResult(gameID);
         }
     }
@@ -77,9 +77,9 @@ public class GameService {
         String username = auth.username();
         GameData updatedGame;
         if (request.playerColor().equals("WHITE")) {
-            updatedGame = new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game());
+            updatedGame = new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game(), null);
         } else {
-            updatedGame = new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game());
+            updatedGame = new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game(), null);
         }
         return updatedGame;
     }
