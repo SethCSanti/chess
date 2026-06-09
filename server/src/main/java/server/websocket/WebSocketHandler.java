@@ -88,7 +88,42 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command) throws Exception {
-        // TODO
+        GameData gameData = dataAccess.getGame(command.getGameID());
+        if (gameData == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game not found"));
+            return;
+        }
+        if (gameData.gameOver()) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over"));
+            return;
+        }
+        boolean isWhite = username.equals(gameData.whiteUsername());
+        boolean isBlack = username.equals(gameData.blackUsername());
+        if (!isWhite && !isBlack) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: observers cannot make moves"));
+            return;
+        }
+
+        try {
+            gameData.game().makeMove(command.getMove());
+        } catch (Exception ex) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: " + ex.getMessage()));
+            return;
+        }
+
+        dataAccess.updateGame(gameData);
+        connections.broadcastToAll(command.getGameID(), new LoadGameMessage(ServerMessage.ServerMessageType.ERROR, gameData.game()));
+
+        String moveNotification = username + " made a move";
+        connections.broadcast(command.getGameID(), session, new NotificationMessage(ServerMessage.ServerMessageType.ERROR, moveNotification));
+
+        if (gameData.game().isInCheckmate(chess.ChessGame.TeamColor.WHITE)) {
+            connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.ERROR, "White is in checkmate!"));
+            dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
+                    gameData.blackUsername(), gameData.gameName(), gameData.game(), true));
+        } else if (gameData.game().isInCheck(chess.ChessGame.TeamColor.WHITE)) {
+            connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.ERROR, "White is in check!"));
+        }
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) throws Exception {
