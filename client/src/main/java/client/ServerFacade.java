@@ -94,4 +94,8 @@ public class ServerFacade {
             return new BufferedReader(isr).lines().reduce("", String::concat);
         }
     }
+
+    public String getServerUrl() {
+        return baseUrl;
+    }
 }

@@ -87,13 +87,12 @@ public class PostloginClient extends ClientBase {
             }
             int gameID = gameList.get(index).gameID();
             server.joinGame(authToken, color, gameID);
-            new GameplayClient(server, authToken, color, new ChessGame()).run();
+            new GameplayClient(server, authToken, color, gameID).run();
             return "";
         }
         return "Expected: <game number> <WHITE|BLACK>\n";
     }
 
-    /** Observes an existing game from the white perspective and transitions to the gameplay REPL. */
     private String observe(String[] params) throws Exception {
         if (params.length >= 1) {
             int index;
@@ -108,7 +107,8 @@ public class PostloginClient extends ClientBase {
             if (index < 0 || index >= gameList.size()) {
                 return "Invalid game number.\n";
             }
-            new GameplayClient(server, authToken, "OBSERVER", new ChessGame()).run();
+            int gameID = gameList.get(index).gameID();
+            new GameplayClient(server, authToken, "OBSERVER", gameID).run();
             return "";
         }
         return "Expected: <game number>\n";

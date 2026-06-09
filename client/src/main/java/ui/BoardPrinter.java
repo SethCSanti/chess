@@ -54,6 +54,61 @@ public class BoardPrinter {
         printColLabels(colLabels);
     }
 
+    public static void drawWithHighlights(ChessBoard board, boolean isBlack, java.util.Collection<ChessMove> highlights) {
+        System.out.println();
+        printBoardWithHighlights(board, isBlack, highlights);
+        System.out.println();
+    }
+
+    private static void printBoardWithHighlights(ChessBoard board, boolean isBlack, java.util.Collection<ChessMove> highlights) {
+        String[] colLabels = isBlack ?
+                new String[]{"h", "g", "f", "e", "d", "c", "b", "a"} :
+                new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
+
+        printColLabels(colLabels);
+
+        int rowStart = isBlack ? 1 : 8;
+        int rowEnd = isBlack ? 8 : 1;
+        int rowStep = isBlack ? 1 : -1;
+
+        for (int row = rowStart; row != rowEnd + rowStep; row += rowStep) {
+            System.out.print(SET_BG_COLOR_FOREST_GREEN);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
+            System.out.print(" " + row + " ");
+
+            int colStart = isBlack ? 8 : 1;
+            int colEnd = isBlack ? 1 : 8;
+            int colStep = isBlack ? -1 : 1;
+
+            for (int col = colStart; col != colEnd + colStep; col += colStep) {
+                ChessPosition pos = new ChessPosition(row, col);
+                boolean isHighlighted = highlights != null && highlights.stream()
+                        .anyMatch(m -> m.getEndPosition().equals(pos));
+                boolean isLightSquare = (row + col) % 2 != 0;
+
+                if (isHighlighted) {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_GREEN);
+                } else if (isLightSquare) {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
+                } else {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY);
+                }
+
+                ChessPiece piece = board.getPiece(pos);
+                System.out.print(getPieceString(piece));
+            }
+
+            System.out.print(SET_BG_COLOR_FOREST_GREEN);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
+            System.out.print(" " + row + " ");
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
+            System.out.println();
+        }
+
+        printColLabels(colLabels);
+    }
+
     private static void printColLabels(String[] labels) {
         System.out.print(SET_BG_COLOR_FOREST_GREEN);
         System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
