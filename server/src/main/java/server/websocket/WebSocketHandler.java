@@ -127,7 +127,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) throws Exception {
-        // TODO
+        GameData gameData = dataAccess.getGame(command.getGameID());
+
+        if (username.equals(gameData.whiteUsername())) {
+            GameData updated = new GameData(gameData.gameID(), null, gameData.blackUsername(),
+                    gameData.gameName(), gameData.game(), gameData.gameOver());
+            dataAccess.updateGame(updated);
+        } else if (username.equals(gameData.blackUsername())) {
+            GameData updated = new GameData(gameData.gameID(), gameData.whiteUsername(), null,
+                    gameData.gameName(), gameData.game(), gameData.gameOver());
+            dataAccess.updateGame(updated);
+        }
+        connections.remove(session);
+        connections.broadcast(command.getGameID(), session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " left the game"));
     }
 
     private void resign(Session session, String username, UserGameCommand command) throws Exception {
