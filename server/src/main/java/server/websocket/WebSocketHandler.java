@@ -3,10 +3,13 @@ package server.websocket;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import io.javalin.websocket.*;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -66,7 +69,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(Session session, String username, UserGameCommand command) throws Exception {
-        // TODO
+        GameData game = dataAccess.getGame(command.getGameID());
+        if (game == null) {
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game does not exist"));
+            return;
+        }
+        sendMessage(session, new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
+
+        String notification;
+        if (username.equals(game.whiteUsername())) {
+            notification = username + " joined the game";
+        } else if (username.equals(game.blackUsername())) {
+            notification = username + " joined the game";
+        } else {
+            notification = username + " is observing";
+        }
+        connections.broadcast(command.getGameID(), session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notification));
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command) throws Exception {
