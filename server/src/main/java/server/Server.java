@@ -5,6 +5,7 @@ import dataaccess.DatabaseManager;
 import dataaccess.MySQLDataAccess;
 import io.javalin.*;
 import model.Response;
+import server.websocket.WebSocketHandler;
 
 public class Server {
     {
@@ -16,12 +17,14 @@ public class Server {
     }
 
     private final Javalin javalin;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         MySQLDataAccess dataAccess;
         try {
             dataAccess = new MySQLDataAccess();
+            webSocketHandler = new WebSocketHandler(dataAccess);
         } catch (DataAccessException e) {
             throw new RuntimeException("Failed to initialize data access", e);
         }
@@ -59,6 +62,11 @@ public class Server {
         javalin.exception(dataaccess.DataAccessException.class, (ex, ctx) -> {
             ctx.status(500);
             ctx.result(JsonUtils.toJson(new Response("Error: " + ex.getMessage())));
+        });
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
         });
 
     }
