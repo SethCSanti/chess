@@ -43,18 +43,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.add(gameID, session);
             switch (command.getCommandType()) {
                 case CONNECT   -> connect(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, new Gson().fromJson(ctx.message(), MakeMoveCommand.class));
+                case MAKE_MOVE -> makeMove(session, username, new Gson().fromJson(ctx.message(),
+                        MakeMoveCommand.class));
                 case LEAVE     -> leaveGame(session, username, command);
                 case RESIGN    -> resign(session, username, command);
             }
         } catch (dataaccess.UnauthorizedException ex) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: unauthorized"));
         } catch (Exception ex) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: " + ex.getMessage()));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: " + ex.getMessage()));
         }
     }
 
-    private String getUsername(String authToken) throws dataaccess.UnauthorizedException, dataaccess.DataAccessException {
+    private String getUsername(String authToken) throws dataaccess.UnauthorizedException,
+            dataaccess.DataAccessException {
         var auth = dataAccess.getAuth(authToken);
         if (auth == null) { throw new dataaccess.UnauthorizedException("Invalid auth token"); }
         return auth.username();
@@ -71,7 +75,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String username, UserGameCommand command) throws Exception {
         GameData game = dataAccess.getGame(command.getGameID());
         if (game == null) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game does not exist"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: game does not exist"));
             return;
         }
         sendMessage(session, new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
@@ -84,59 +89,74 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } else {
             notification = username + " is observing";
         }
-        connections.broadcast(command.getGameID(), session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notification));
+        connections.broadcast(command.getGameID(), session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, notification));
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command) throws Exception {
         GameData gameData = dataAccess.getGame(command.getGameID());
         if (gameData == null) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game not found"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: game not found"));
             return;
         }
         if (gameData.gameOver()) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: game is already over"));
             return;
         }
         boolean isWhite = username.equals(gameData.whiteUsername());
         boolean isBlack = username.equals(gameData.blackUsername());
         if (!isWhite && !isBlack) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: observers cannot make moves"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: observers cannot make moves"));
             return;
         }
 
         // validate it's their turn
-        chess.ChessGame.TeamColor playerColor = isWhite ? chess.ChessGame.TeamColor.WHITE : chess.ChessGame.TeamColor.BLACK;
+        chess.ChessGame.TeamColor playerColor =
+                isWhite ? chess.ChessGame.TeamColor.WHITE : chess.ChessGame.TeamColor.BLACK;
         if (gameData.game().getTeamTurn() != playerColor) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: it is not your turn"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: it is not your turn"));
             return;
         }
 
         try {
             gameData.game().makeMove(command.getMove());
         } catch (chess.InvalidMoveException ex) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: " + ex.getMessage()));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: " + ex.getMessage()));
             return;
         }
 
         dataAccess.updateGame(gameData);
-        connections.broadcastToAll(command.getGameID(), new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game()));
-        connections.broadcast(command.getGameID(), session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " made a move"));
+        connections.broadcastToAll(command.getGameID(),
+                new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game()));
+        connections.broadcast(command.getGameID(), session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " made a move"));
 
         // check both colors for check, checkmate, stalemate
         for (chess.ChessGame.TeamColor color : chess.ChessGame.TeamColor.values()) {
             String colorName = color == chess.ChessGame.TeamColor.WHITE ? "White" : "Black";
             if (gameData.game().isInCheckmate(color)) {
-                connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, colorName + " is in checkmate!"));
+                connections.broadcastToAll(command.getGameID(),
+                        new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                                colorName + " is in checkmate!"));
                 dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
                         gameData.blackUsername(), gameData.gameName(), gameData.game(), true));
                 return;
             } else if (gameData.game().isInStalemate(color)) {
-                connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate!"));
+                connections.broadcastToAll(command.getGameID(),
+                        new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate!"));
                 dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
                         gameData.blackUsername(), gameData.gameName(), gameData.game(), true));
                 return;
             } else if (gameData.game().isInCheck(color)) {
-                connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, colorName + " is in check!"));
+                connections.broadcastToAll(command.getGameID(),
+                        new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                                colorName + " is in check!"));
             }
         }
     }
@@ -155,7 +175,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         connections.remove(session);
         connections.broadcast(command.getGameID(), session,
-                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " left the game"));
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " left the game"));
     }
 
     private void resign(Session session, String username, UserGameCommand command) throws Exception {
@@ -164,13 +185,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         // observers cannot resign
         boolean isPlayer = username.equals(gameData.whiteUsername()) || username.equals(gameData.blackUsername());
         if (!isPlayer) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: observers cannot resign"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: observers cannot resign"));
             return;
         }
 
         // game must not already be over
         if (gameData.gameOver()) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, "Error: game is already over"));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: game is already over"));
             return;
         }
 
@@ -180,6 +203,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         dataAccess.updateGame(updated);
 
         // notify everyone including the resigner
-        connections.broadcastToAll(command.getGameID(), new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " resigned"));
+        connections.broadcastToAll(command.getGameID(),
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " resigned"));
     }
 }

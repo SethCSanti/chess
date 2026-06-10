@@ -8,59 +8,17 @@ public class BoardPrinter {
 
     public static void draw(ChessBoard board, boolean isBlack) {
         System.out.println();
-        printBoard(board, isBlack);
+        printBoardInternal(board, isBlack, null);
         System.out.println();
-    }
-
-    private static void printBoard(ChessBoard board, boolean isBlack) {
-        String[] colLabels = isBlack ?
-                new String[]{"h", "g", "f", "e", "d", "c", "b", "a"} :
-                new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
-
-        printColLabels(colLabels);
-
-        int rowStart = isBlack ? 1 : 8;
-        int rowEnd = isBlack ? 8 : 1;
-        int rowStep = isBlack ? 1 : -1;
-
-        for (int row = rowStart; row != rowEnd + rowStep; row += rowStep) {
-            System.out.print(SET_BG_COLOR_FOREST_GREEN);
-            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
-            System.out.print(" " + row + " ");
-
-            int colStart = isBlack ? 8 : 1;
-            int colEnd = isBlack ? 1 : 8;
-            int colStep = isBlack ? -1 : 1;
-
-            for (int col = colStart; col != colEnd + colStep; col += colStep) {
-                boolean isLightSquare = (row + col) % 2 != 0;
-                if (isLightSquare) {
-                    System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
-                } else {
-                    System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY);
-                }
-                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
-                System.out.print(getPieceString(piece));
-            }
-
-            System.out.print(SET_BG_COLOR_FOREST_GREEN);
-            System.out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
-            System.out.print(" " + row + " ");
-            System.out.print(EscapeSequences.RESET_BG_COLOR);
-            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
-            System.out.println();
-        }
-
-        printColLabels(colLabels);
     }
 
     public static void drawWithHighlights(ChessBoard board, boolean isBlack, java.util.Collection<ChessMove> highlights) {
         System.out.println();
-        printBoardWithHighlights(board, isBlack, highlights);
+        printBoardInternal(board, isBlack, highlights);
         System.out.println();
     }
 
-    private static void printBoardWithHighlights(ChessBoard board, boolean isBlack, java.util.Collection<ChessMove> highlights) {
+    private static void printBoardInternal(ChessBoard board, boolean isBlack, java.util.Collection<ChessMove> highlights) {
         String[] colLabels = isBlack ?
                 new String[]{"h", "g", "f", "e", "d", "c", "b", "a"} :
                 new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
@@ -82,10 +40,12 @@ public class BoardPrinter {
 
             for (int col = colStart; col != colEnd + colStep; col += colStep) {
                 ChessPosition pos = new ChessPosition(row, col);
+
+                boolean isLightSquare = (row + col) % 2 != 0;
                 boolean isHighlighted = highlights != null && highlights.stream()
                         .anyMatch(m -> m.getEndPosition().equals(pos));
-                boolean isLightSquare = (row + col) % 2 != 0;
 
+                // 🔥 unified coloring logic
                 if (isHighlighted) {
                     System.out.print(EscapeSequences.SET_BG_COLOR_GREEN);
                 } else if (isLightSquare) {
