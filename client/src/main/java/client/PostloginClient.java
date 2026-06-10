@@ -1,6 +1,5 @@
 package client;
 
-import chess.ChessGame;
 import java.util.Arrays;
 
 public class PostloginClient extends ClientBase {
@@ -75,9 +74,6 @@ public class PostloginClient extends ClientBase {
             } catch (NumberFormatException e) {
                 return "Game number must be a valid integer.\n";
             }
-            if (gameList.isEmpty()) {
-                return "Please type 'list' first to see available games.\n";
-            }
             if (index < 0 || index >= gameList.size()) {
                 return "Invalid game number.\n";
             }
@@ -100,9 +96,6 @@ public class PostloginClient extends ClientBase {
                 index = Integer.parseInt(params[0]) - 1;
             } catch (NumberFormatException e) {
                 return "Game number must be a valid integer.\n";
-            }
-            if (gameList.isEmpty()) {
-                return "Please type 'list' first to see available games.\n";
             }
             if (index < 0 || index >= gameList.size()) {
                 return "Invalid game number.\n";

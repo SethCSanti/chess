@@ -86,11 +86,18 @@ public class GameplayClient extends ClientBase implements ServerMessageObserver 
     private String resign() throws Exception {
         System.out.print("Are you sure you want to resign? (yes/no): ");
         String confirm = new java.util.Scanner(System.in).nextLine().trim().toLowerCase();
-        if (confirm.equals("yes")) {
-            ws.sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
-        } else {
-            System.out.println("Resign cancelled.");
+
+        if (!confirm.equals("yes")) {
+            System.out.println("Resignation cancelled.");
+            return "";
         }
+
+        ws.sendCommand(new UserGameCommand(
+                UserGameCommand.CommandType.RESIGN,
+                authToken,
+                gameID
+        ));
+
         return "";
     }
 

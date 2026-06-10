@@ -1,10 +1,12 @@
 package websocket.messages;
 
 public class ErrorMessage extends ServerMessage {
+
     private final String errorMessage;
+
     public ErrorMessage(ServerMessageType type, String message) {
         super(ServerMessageType.ERROR);
-        this.errorMessage = message;
+        this.errorMessage = (message == null) ? "Unknown error" : message;
     }
 
     public String getErrorMessage() {

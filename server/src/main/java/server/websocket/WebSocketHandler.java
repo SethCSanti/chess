@@ -21,6 +21,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         this.dataAccess = dataAccess;
     }
 
+    private String toChess(chess.ChessPosition pos) {
+        char file = (char) ('a' + pos.getColumn() - 1);
+        int rank = pos.getRow();
+        return "" + file + rank;
+    }
+
+    private GameData markGameOver(GameData gameData) {
+        return new GameData(
+                gameData.gameID(),
+                gameData.whiteUsername(),
+                gameData.blackUsername(),
+                gameData.gameName(),
+                gameData.game(),
+                true
+        );
+    }
+
     @Override
     public void handleConnect(WsConnectContext ctx) {
         ctx.enableAutomaticPings();
@@ -50,10 +67,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
         } catch (dataaccess.UnauthorizedException ex) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: unauthorized"));
+                    "Unauthorized"));
         } catch (Exception ex) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: " + ex.getMessage()));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
         }
     }
 
@@ -76,7 +92,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         GameData game = dataAccess.getGame(command.getGameID());
         if (game == null) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: game does not exist"));
+                    "Game does not exist"));
             return;
         }
         sendMessage(session, new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
@@ -97,19 +113,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         GameData gameData = dataAccess.getGame(command.getGameID());
         if (gameData == null) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: game not found"));
+                    "Game not found"));
             return;
         }
         if (gameData.gameOver()) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: game is already over"));
+                    "Game is already over"));
             return;
         }
         boolean isWhite = username.equals(gameData.whiteUsername());
         boolean isBlack = username.equals(gameData.blackUsername());
         if (!isWhite && !isBlack) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: observers cannot make moves"));
+                    "Observers cannot make moves"));
             return;
         }
 
@@ -118,24 +134,30 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 isWhite ? chess.ChessGame.TeamColor.WHITE : chess.ChessGame.TeamColor.BLACK;
         if (gameData.game().getTeamTurn() != playerColor) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: it is not your turn"));
+                    "It is not your turn"));
             return;
         }
 
         try {
             gameData.game().makeMove(command.getMove());
         } catch (chess.InvalidMoveException ex) {
-            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: " + ex.getMessage()));
+            sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
             return;
         }
 
         dataAccess.updateGame(gameData);
         connections.broadcastToAll(command.getGameID(),
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game()));
+
+        var move = command.getMove();
+
+        String msg = username + " moved from " +
+                toChess(move.getStartPosition()) +
+                " to " +
+                toChess(move.getEndPosition());
+
         connections.broadcast(command.getGameID(), session,
-                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        username + " made a move"));
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, msg));
 
         // check both colors for check, checkmate, stalemate
         for (chess.ChessGame.TeamColor color : chess.ChessGame.TeamColor.values()) {
@@ -144,14 +166,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.broadcastToAll(command.getGameID(),
                         new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                                 colorName + " is in checkmate!"));
-                dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
-                        gameData.blackUsername(), gameData.gameName(), gameData.game(), true));
+                dataAccess.updateGame(markGameOver(gameData));
                 return;
             } else if (gameData.game().isInStalemate(color)) {
                 connections.broadcastToAll(command.getGameID(),
                         new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate!"));
-                dataAccess.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
-                        gameData.blackUsername(), gameData.gameName(), gameData.game(), true));
+                dataAccess.updateGame(markGameOver(gameData));
                 return;
             } else if (gameData.game().isInCheck(color)) {
                 connections.broadcastToAll(command.getGameID(),
@@ -186,14 +206,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         boolean isPlayer = username.equals(gameData.whiteUsername()) || username.equals(gameData.blackUsername());
         if (!isPlayer) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: observers cannot resign"));
+                    "Observers cannot resign"));
             return;
         }
 
         // game must not already be over
         if (gameData.gameOver()) {
             sendMessage(session, new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                    "Error: game is already over"));
+                    "Game is already over"));
             return;
         }
 
