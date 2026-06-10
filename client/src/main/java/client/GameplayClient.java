@@ -116,9 +116,22 @@ public class GameplayClient extends ClientBase implements ServerMessageObserver 
     }
 
     private ChessPosition parsePosition(String pos) {
+        if (pos == null || pos.length() != 2) {
+            throw new IllegalArgumentException("Invalid position: " + pos);
+        }
+
         pos = pos.toLowerCase();
-        int col = pos.charAt(0) - 'a' + 1;
-        int row = pos.charAt(1) - '0';
+
+        char file = pos.charAt(0);
+        char rank = pos.charAt(1);
+
+        if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
+            throw new IllegalArgumentException("Out of bounds position: " + pos);
+        }
+
+        int col = file - 'a' + 1;
+        int row = Character.getNumericValue(rank);
+
         return new ChessPosition(row, col);
     }
 
