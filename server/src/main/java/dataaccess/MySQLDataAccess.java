@@ -35,7 +35,8 @@ public class MySQLDataAccess implements DataAccess {
             whiteUsername VARCHAR(256),
             blackUsername VARCHAR(256),
             gameName      VARCHAR(256) NOT NULL,
-            game          TEXT         NOT NULL
+            game          TEXT         NOT NULL,
+            gameOver      BOOLEAN      NOT NULL DEFAULT FALSE
         )
         """
         };
@@ -136,7 +137,7 @@ public class MySQLDataAccess implements DataAccess {
                             rs.getString("blackUsername"),
                             rs.getString("gameName"),
                             JsonUtils.fromJson(rs.getString("game"), ChessGame.class
-                            ), null
+                            ), rs.getBoolean("gameOver")
                     );
                 }
             }
@@ -162,7 +163,7 @@ public class MySQLDataAccess implements DataAccess {
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
                         JsonUtils.fromJson(rs.getString("game"), ChessGame.class
-                        ), null
+                        ), rs.getBoolean("gameOver")
                 ));
             }
 
@@ -176,10 +177,10 @@ public class MySQLDataAccess implements DataAccess {
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         var statement = """
-        UPDATE games\s
-        SET whiteUsername=?, blackUsername=?, gameName=?, game=?\s
+        UPDATE games
+        SET whiteUsername=?, blackUsername=?, gameName=?, game=?, gameOver=?
         WHERE gameID=?
-       \s""";
+        """;
 
         String gameJson = JsonUtils.toJson(game.game());
 
@@ -190,7 +191,8 @@ public class MySQLDataAccess implements DataAccess {
             ps.setString(2, game.blackUsername());
             ps.setString(3, game.gameName());
             ps.setString(4, gameJson);
-            ps.setInt(5, game.gameID());
+            ps.setBoolean(5, game.gameOver());
+            ps.setInt(6, game.gameID());
 
             ps.executeUpdate();
 

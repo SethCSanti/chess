@@ -94,20 +94,20 @@ public class MySQLDataAccessTest {
     // CREATE GAME
     @Test
     void createGameSuccess() throws DataAccessException {
-        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null, null));
+        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null, false));
         assertTrue(id > 0);
     }
 
     @Test
     void createGameNullNameFails() {
         assertThrows(DataAccessException.class, () ->
-                dataAccess.createGame(new GameData(0, null, null, null, null, null)));
+                dataAccess.createGame(new GameData(0, null, null, null, null, false)));
     }
 
     // GET GAME
     @Test
     void getGameSuccess() throws DataAccessException {
-        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null,null));
+        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null, false));
         GameData result = dataAccess.getGame(id);
         assertNotNull(result);
         assertEquals("testGame", result.gameName());
@@ -122,8 +122,8 @@ public class MySQLDataAccessTest {
     // LIST GAMES
     @Test
     void listGamesSuccess() throws DataAccessException {
-        dataAccess.createGame(new GameData(0, null, null, "game1", null, null));
-        dataAccess.createGame(new GameData(0, null, null, "game2", null, null));
+        dataAccess.createGame(new GameData(0, null, null, "game1", null, false));
+        dataAccess.createGame(new GameData(0, null, null, "game2", null, false));
         var games = dataAccess.listGames();
         assertEquals(2, games.size());
     }
@@ -138,8 +138,8 @@ public class MySQLDataAccessTest {
     // UPDATE GAME
     @Test
     void updateGameSuccess() throws DataAccessException {
-        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null, null));
-        GameData updated = new GameData(id, "alice", null, "testGame", null, null);
+        int id = dataAccess.createGame(new GameData(0, null, null, "testGame", null, false));
+        GameData updated = new GameData(id, "alice", null, "testGame", null, false);
         assertDoesNotThrow(() -> dataAccess.updateGame(updated));
         assertEquals("alice", dataAccess.getGame(id).whiteUsername());
     }
@@ -147,6 +147,6 @@ public class MySQLDataAccessTest {
     @Test
     void updateGameNonExistentDoesNotThrow() {
         assertDoesNotThrow(() ->
-                dataAccess.updateGame(new GameData(99999, "alice", null, "testGame", null, null)));
+                dataAccess.updateGame(new GameData(99999, "alice", null, "testGame", null, false)));
     }
 }
